@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>EduSavvy — Strategic AI Blueprint</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  /* ── TOKENS ── */
+  :root {
+    --green:        #1D9E75;
+    --green-dark:   #0A5C45;
+    --green-mid:    #0F6E56;
+    --green-light:  #E1F5EE;
+    --green-soft:   #C5EAD9;
+    --purple:       #534AB7;
+    --purple-light: #EEEDFE;
+    --amber:        #E09A1A;
+    --amber-light:  #FDF3DC;
+    --coral:        #C0392B;
+    --coral-light:  #FAEAE8;
+    --ink:          #111714;
+    --ink-mid:      #2D3B35;
+    --ink-soft:     #4A5E56;
+    --mist:         #8FA89E;
+    --border:       #D9E8E2;
+    --surface:      #F4FAF7;
+    --white:        #FFFFFF;
+    --font-head:    'Space Grotesk', sans-serif;
+    --font-body:    'Inter', sans-serif;
+    --font-mono:    'JetBrains Mono', monospace;
+    --r-sm:         6px;
+    --r-md:         10px;
+    --r-lg:         16px;
+    --r-xl:         22px;
+    --shadow:       0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+    --shadow-lg:    0 2px 8px rgba(0,0,0,.09), 0 12px 40px rgba(0,0,0,.08);
+  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font-body); background: #F2F7F4; color: var(--ink); min-height: 100vh; }
+
+  /* ── LAYOUT ── */
+  .shell { display: flex; min-height: 100vh; }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 240px; flex-shrink: 0; background: var(--green-dark);
+    display: flex; flex-direction: column; position: fixed; top: 0; left: 0;
+    height: 100vh; overflow-y: auto; z-index: 100;
+  }
+  .sidebar-brand {
+    padding: 24px 20px 16px;
+    border-bottom: 1px solid rgba(255,255,255,.1);
+  }
+  .sidebar-logo {
+    width: 36px; height: 36px; background: var(--green); border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-head); font-weight: 700; color: #fff; font-size: 16px;
+    margin-bottom: 10px; letter-spacing: -0.5px;
+  }
+  .sidebar-title { font-family: var(--font-head); font-weight: 600; color: #fff; font-size: 15px; line-height: 1.3; }
+  .sidebar-sub { font-size: 11px; color: rgba(255,255,255,.5); margin-top: 3px; }
+
+  .nav-section { padding: 16px 12px 8px; }
+  .nav-label { font-size: 10px; font-weight: 600; color: rgba(255,255,255,.35); text-transform: uppercase; letter-spacing: .1em; padding: 0 8px 8px; }
+  .nav-item {
+    display: flex; align-items: center; gap: 10px; padding: 9px 10px;
+    border-radius: var(--r-md); cursor: pointer; margin-bottom: 2px;
+    transition: background .15s; color: rgba(255,255,255,.65); font-size: 13px; font-weight: 500;
+    border: none; background: transparent; width: 100%; text-align: left;
+  }
+  .nav-item:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .nav-item.active { background: var(--green); color: #fff; }
+  .nav-item .nav-num {
+    width: 20px; height: 20px; border-radius: 50%; background: rgba(255,255,255,.12);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700; flex-shrink: 0;
+  }
+  .nav-item.active .nav-num { background: rgba(255,255,255,.25); }
+  .nav-item svg { flex-shrink: 0; opacity: .7; }
+  .nav-item.active svg { opacity: 1; }
+
+  .sidebar-footer {
+    margin-top: auto; padding: 16px; border-top: 1px solid rgba(255,255,255,.08);
+    font-size: 11px; color: rgba(255,255,255,.35); line-height: 1.5;
+  }
+
+  /* ── MAIN ── */
+  .main { margin-left: 240px; flex: 1; min-width: 0; }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    background: var(--white); border-bottom: 1px solid var(--border);
+    padding: 14px 32px; display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 50;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar-section { font-family: var(--font-head); font-weight: 600; color: var(--ink); font-size: 15px; }
+  .topbar-crumb { font-size: 12px; color: var(--mist); }
+  .progress-wrap { display: flex; align-items: center; gap: 10px; }
+  .progress-label { font-size: 12px; color: var(--ink-soft); }
+  .progress-track { width: 120px; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); border-radius: 2px; transition: width .4s; }
+
+  /* ── CONTENT ── */
+  .content { padding: 32px; max-width: 900px; }
+  .section-view { display: none; }
+  .section-view.active { display: block; }
+
+  /* ── HERO BANNER ── */
+  .hero {
+    background: linear-gradient(135deg, var(--green-dark) 0%, #1A7A5A 60%, var(--green) 100%);
+    border-radius: var(--r-xl); padding: 40px 40px 36px; margin-bottom: 28px;
+    position: relative; overflow: hidden;
+  }
+  .hero::before {
+    content: ''; position: absolute; top: -60px; right: -60px;
+    width: 220px; height: 220px; background: rgba(255,255,255,.04);
+    border-radius: 50%; pointer-events: none;
+  }
+  .hero::after {
+    content: ''; position: absolute; bottom: -80px; right: 60px;
+    width: 160px; height: 160px; background: rgba(255,255,255,.03);
+    border-radius: 50%; pointer-events: none;
+  }
+  .hero-eyebrow { font-size: 11px; font-weight: 600; color: var(--green-soft); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; }
+  .hero-title { font-family: var(--font-head); font-size: 28px; font-weight: 700; color: #fff; line-height: 1.2; margin-bottom: 10px; }
+  .hero-desc { font-size: 14px; color: rgba(255,255,255,.7); line-height: 1.7; max-width: 540px; }
+  .hero-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+  .hero-tag {
+    padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+    background: rgba(255,255,255,.12); color: rgba(255,255,255,.85);
+    border: 1px solid rgba(255,255,255,.15);
+  }
+
+  /* ── STAT ROW ── */
+  .stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card {
+    background: var(--white); border-radius: var(--r-lg); padding: 20px;
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+  }
+  .stat-num { font-family: var(--font-head); font-size: 28px; font-weight: 700; color: var(--green-mid); }
+  .stat-label { font-size: 12px; color: var(--ink-soft); margin-top: 4px; line-height: 1.4; }
+
+  /* ── CARD GRID ── */
+  .card-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 28px; }
+  .card {
+    background: var(--white); border-radius: var(--r-lg); padding: 20px;
+    border: 1px solid var(--border); box-shadow: var(--shadow);
+  }
+  .card-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+  .domain-chip {
+    font-size: 10px; font-weight: 700; padding: 4px 9px; border-radius: 20px;
+    text-transform: uppercase; letter-spacing: .07em; flex-shrink: 0; margin-top: 2px;
+  }
+  .chip-prompt  { background: #E6F1FB; color: #1252A3; }
+  .chip-fluency { background: var(--purple-light); color: var(--purple); }
+  .chip-ethics  { background: var(--coral-light); color: var(--coral); }
+  .chip-agents  { background: var(--green-light); color: var(--green-mid); }
+  .card-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.35; }
+  .card-body { font-size: 13px; color: var(--ink-soft); line-height: 1.65; }
+  .harm-strip {
+    display: flex; gap: 8px; align-items: flex-start; margin-top: 12px;
+    background: var(--coral-light); border-radius: var(--r-sm); padding: 10px 12px;
+  }
+  .harm-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--coral); flex-shrink: 0; margin-top: 5px; }
+  .harm-text { font-size: 12px; color: var(--coral); line-height: 1.55; }
+  .fw-tag { font-size: 11px; color: var(--mist); margin-top: 10px; font-family: var(--font-mono); }
+
+  /* ── ACCORDION ── */
+  .accordion { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .acc-item { background: var(--white); border-radius: var(--r-lg); border: 1px solid var(--border); overflow: hidden; box-shadow: var(--shadow); }
+  .acc-head {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 16px 20px; cursor: pointer; user-select: none;
+  }
+  .acc-head:hover { background: var(--surface); }
+  .acc-head-left { display: flex; align-items: center; gap: 12px; }
+  .acc-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--ink); }
+  .acc-chevron { color: var(--mist); transition: transform .2s; flex-shrink: 0; }
+  .acc-item.open .acc-chevron { transform: rotate(180deg); }
+  .acc-body { display: none; padding: 0 20px 20px; border-top: 1px solid var(--border); }
+  .acc-item.open .acc-body { display: block; }
+
+  /* ── CODE BLOCK ── */
+  .code-block {
+    background: #F0F7F4; border: 1px solid var(--border); border-radius: var(--r-md);
+    padding: 14px 16px; font-family: var(--font-mono); font-size: 12px;
+    color: var(--ink-mid); line-height: 1.8; margin: 14px 0; white-space: pre-wrap; word-break: break-word;
+  }
+  .lbl { font-weight: 700; font-size: 11px; padding: 2px 6px; border-radius: 4px; margin-right: 6px; }
+  .lbl-a { background: #1252A3; color: #fff; }
+  .lbl-i { background: #0F6E56; color: #fff; }
+  .lbl-m { background: #534AB7; color: #fff; }
+  .lbl-map { background: #C0392B; color: #fff; }
+  .lbl-4d { background: #6C3483; color: #fff; }
+  .lbl-tr { background: #C0392B; color: #fff; }
+  .lbl-oa { background: #1A5276; color: #fff; }
+
+  /* ── AGENT FLOW ── */
+  .agent-flow { display: flex; gap: 0; align-items: stretch; margin: 14px 0; }
+  .agent-box {
+    flex: 1; border-radius: var(--r-md); padding: 14px; border: 1.5px solid;
+  }
+  .agent-tutor   { background: #F0FFF8; border-color: var(--green-soft); }
+  .agent-assess  { background: var(--purple-light); border-color: #AFA9EC; }
+  .agent-human   { background: var(--amber-light); border-color: #F0C060; }
+  .agent-box h4 { font-family: var(--font-head); font-size: 13px; font-weight: 600; margin-bottom: 8px; }
+  .agent-tutor h4  { color: var(--green-mid); }
+  .agent-assess h4 { color: var(--purple); }
+  .agent-human h4  { color: #7D5B00; }
+  .agent-list { list-style: none; }
+  .agent-list li { font-size: 11px; color: var(--ink-soft); padding: 2px 0; display: flex; gap: 5px; line-height: 1.4; }
+  .agent-list li.yes::before { content: "✓"; color: var(--green); font-weight: 700; flex-shrink: 0; }
+  .agent-list li.no::before  { content: "✗"; color: var(--coral); font-weight: 700; flex-shrink: 0; }
+  .agent-arrow { display: flex; align-items: center; justify-content: center; padding: 0 10px; color: var(--green); font-size: 18px; flex-shrink: 0; }
+
+  .kill-strip {
+    background: var(--coral-light); border: 1.5px solid #F0A89A;
+    border-radius: var(--r-md); padding: 12px 16px; margin-top: 12px;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .kill-icon { font-size: 18px; flex-shrink: 0; }
+  .kill-text { font-size: 12px; color: var(--coral); line-height: 1.6; font-weight: 500; }
+
+  /* ── HORIZON ── */
+  .horizon-grid { display: grid; grid-template-columns: 1fr; gap: 16px; margin-bottom: 28px; }
+  .horizon-card {
+    background: var(--white); border-radius: var(--r-lg);
+    border: 1px solid var(--border); box-shadow: var(--shadow); overflow: hidden;
+  }
+  .horizon-head {
+    padding: 16px 20px 12px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .horizon-icon { width: 32px; height: 32px; border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+  .hi-green  { background: var(--green-light); }
+  .hi-purple { background: var(--purple-light); }
+  .hi-amber  { background: var(--amber-light); }
+  .horizon-head h3 { font-family: var(--font-head); font-size: 15px; font-weight: 600; color: var(--ink); }
+  .horizon-head p  { font-size: 12px; color: var(--mist); margin-top: 1px; }
+  .horizon-body { padding: 16px 20px; }
+  .timeline-row { display: flex; align-items: flex-start; gap: 14px; margin-bottom: 12px; }
+  .t-year { font-family: var(--font-mono); font-size: 11px; color: var(--mist); min-width: 36px; padding-top: 3px; }
+  .t-right { flex: 1; }
+  .t-bar-bg { height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; margin-bottom: 5px; }
+  .t-bar-fill { height: 100%; border-radius: 3px; }
+  .fill-green  { background: var(--green); }
+  .fill-purple { background: var(--purple); }
+  .fill-amber  { background: var(--amber); }
+  .t-text { font-size: 12px; color: var(--ink-soft); line-height: 1.55; }
+
+  /* ── REFLECTION ── */
+  .reflection-card {
+    background: var(--white); border-radius: var(--r-xl);
+    border: 1px solid var(--border); box-shadow: var(--shadow-lg); overflow: hidden;
+  }
+  .reflection-top {
+    background: linear-gradient(135deg, var(--green-dark), var(--green-mid));
+    padding: 28px 32px;
+  }
+  .reflection-top h2 { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 6px; }
+  .reflection-top p { font-size: 13px; color: rgba(255,255,255,.65); }
+  .reflection-body { padding: 28px 32px; }
+  .reflection-text { font-size: 14px; color: var(--ink-soft); line-height: 1.8; margin-bottom: 16px; }
+  .shift-block {
+    border-left: 3px solid var(--green); padding: 16px 20px;
+    background: var(--green-light); border-radius: 0 var(--r-md) var(--r-md) 0;
+    margin: 20px 0;
+  }
+  .shift-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--green-mid); margin-bottom: 8px; }
+  .shift-text { font-size: 14px; color: var(--ink-mid); line-height: 1.8; font-style: italic; }
+  .word-count { font-size: 11px; color: var(--mist); margin-top: 20px; text-align: right; font-family: var(--font-mono); }
+
+  /* ── CHECKLIST (export) ── */
+  .checklist { display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+  .check-item {
+    background: var(--white); border-radius: var(--r-lg); border: 1px solid var(--border);
+    padding: 16px 20px; display: flex; align-items: flex-start; gap: 14px;
+    box-shadow: var(--shadow);
+  }
+  .check-num {
+    width: 28px; height: 28px; border-radius: 50%; background: var(--green);
+    color: #fff; font-weight: 700; font-size: 12px; display: flex;
+    align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+    font-family: var(--font-head);
+  }
+  .check-title { font-family: var(--font-head); font-size: 14px; font-weight: 600; color: var(--ink); margin-bottom: 4px; }
+  .check-desc { font-size: 12px; color: var(--ink-soft); line-height: 1.6; }
+  .check-status {
+    margin-left: auto; flex-shrink: 0; font-size: 11px; font-weight: 600;
+    padding: 4px 10px; border-radius: 20px;
+  }
+  .status-done { background: var(--green-light); color: var(--green-mid); }
+  .status-todo { background: var(--amber-light); color: #7D5B00; }
+
+  /* ── SECTION HEADING ── */
+  .sec-heading { margin-bottom: 20px; }
+  .sec-eyebrow { font-size: 11px; font-weight: 600; color: var(--green); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+  .sec-title { font-family: var(--font-head); font-size: 22px; font-weight: 700; color: var(--ink); margin-bottom: 6px; }
+  .sec-desc { font-size: 14px; color: var(--ink-soft); line-height: 1.65; }
+
+  /* ── DIVIDER ── */
+  .divider { height: 1px; background: var(--border); margin: 24px 0; }
+
+  /* ── PILL ROW ── */
+  .pill-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+  .pill {
+    font-size: 11px; padding: 4px 10px; border-radius: 20px;
+    background: var(--surface); border: 1px solid var(--border); color: var(--ink-soft);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 700px) {
+    .sidebar { width: 200px; }
+    .main { margin-left: 200px; }
+    .content { padding: 20px; }
+    .card-grid { grid-template-columns: 1fr; }
+    .stat-row { grid-template-columns: 1fr; }
+    .agent-flow { flex-direction: column; }
+    .agent-arrow { transform: rotate(90deg); padding: 6px 0; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ── SIDEBAR ── -->
+  <nav class="sidebar" aria-label="Navigation">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">ES</div>
+      <div class="sidebar-title">EduSavvy</div>
+      <div class="sidebar-sub">Strategic AI Blueprint</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Capstone sections</div>
+      <button class="nav-item active" onclick="showSection('s1',this)" data-section="s1">
+        <span class="nav-num">1</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        Diagnostic Report
+      </button>
+      <button class="nav-item" onclick="showSection('s2',this)" data-section="s2">
+        <span class="nav-num">2</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
+        Redesigned System
+      </button>
+      <button class="nav-item" onclick="showSection('s3',this)" data-section="s3">
+        <span class="nav-num">3</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        Impact Projection
+      </button>
+      <button class="nav-item" onclick="showSection('s4',this)" data-section="s4">
+        <span class="nav-num">4</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        Reflection
+      </button>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">Submission</div>
+      <button class="nav-item" onclick="showSection('s5',this)" data-section="s5">
+        <span class="nav-num">✓</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+        Submission Guide
+      </button>
+    </div>
+    <div class="sidebar-footer">
+      Nicole · University of Nairobi<br/>
+      Chief AI Officer · AI Safari 2025
+    </div>
+  </nav>
+
+  <!-- ── MAIN ── -->
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-left">
+        <span class="topbar-section" id="topbar-section">Diagnostic Report</span>
+        <span class="topbar-crumb" id="topbar-crumb">Section 1 of 4</span>
+      </div>
+      <div class="progress-wrap">
+        <span class="progress-label" id="progress-label">20%</span>
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:20%"></div></div>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- ══ S1: DIAGNOSTIC ══ -->
+      <div id="s1" class="section-view active">
+        <div class="hero">
+          <div class="hero-eyebrow">Section 1 · Diagnostic Report</div>
+          <div class="hero-title">What is broken inside EduSavvy's AI?</div>
+          <div class="hero-desc">An audit of four critical failures — one per domain — mapped to the frameworks that expose them, and the real harm each causes to Kenyan learners.</div>
+          <div class="hero-tags">
+            <span class="hero-tag">AIM + MAP</span>
+            <span class="hero-tag">4D Framework</span>
+            <span class="hero-tag">TRACK + OASIS</span>
+            <span class="hero-tag">RANK + TRAIL</span>
+            <span class="hero-tag">Kenya DPA 2019</span>
+          </div>
+        </div>
+
+        <div class="stat-row">
+          <div class="stat-card">
+            <div class="stat-num">4</div>
+            <div class="stat-label">Critical gaps across all domains</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">2.3M</div>
+            <div class="stat-label">Kenyan learners at risk</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">4</div>
+            <div class="stat-label">Frameworks applied in audit</div>
+          </div>
+        </div>
+
+        <div class="card-grid">
+          <div class="card">
+            <div class="card-header">
+              <span class="domain-chip chip-prompt">Prompting</span>
+              <div class="card-title">Generic tutor prompt fails Kenyan learners</div>
+            </div>
+            <div class="card-body">EduSavvy uses one undifferentiated prompt — "Explain this topic to a student" — with no CBC curriculum alignment, no Swahili support, and no rural learner context.</div>
+            <div class="harm-strip"><div class="harm-dot"></div><div class="harm-text">Students in Makueni and Turkana receive explanations using UK/US examples irrelevant to their lives, causing comprehension failure and dropout.</div></div>
+            <div class="fw-tag">Framework → AIM + MAP</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="domain-chip chip-fluency">Fluency</span>
+              <div class="card-title">Temperature 0.9 on exam revision generates hallucinations</div>
+            </div>
+            <div class="card-body">The platform uses default high temperature for all interactions — including KCSE exam revision quizzes — producing inconsistent and sometimes fabricated answers.</div>
+            <div class="harm-strip"><div class="harm-dot"></div><div class="harm-text">Form 4 students memorise incorrect facts generated by a hallucinating AI, leading to exam failure and lost university entry.</div></div>
+            <div class="fw-tag">Framework → 4D Framework</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="domain-chip chip-ethics">Ethics</span>
+              <div class="card-title">Child learning data shared with advertisers without consent</div>
+            </div>
+            <div class="card-body">Granular student data (quiz scores, failure points, learning pace) is aggregated and shared with edtech advertisers. No explicit consent mechanism exists for minors.</div>
+            <div class="harm-strip"><div class="harm-dot"></div><div class="harm-text">Children's learning vulnerabilities are monetised without parental knowledge, violating Kenya's Data Protection Act 2019 Sections 25 and 30.</div></div>
+            <div class="fw-tag">Framework → TRACK + OASIS</div>
+          </div>
+          <div class="card">
+            <div class="card-header">
+              <span class="domain-chip chip-agents">Agents</span>
+              <div class="card-title">Single agent teaches and grades the same student</div>
+            </div>
+            <div class="card-body">One AI agent handles both content delivery and summative grading with no role separation, no authority limits, no memory layering, and no escalation to human teachers.</div>
+            <div class="harm-strip"><div class="harm-dot"></div><div class="harm-text">Students with learning disabilities receive punitive AI grading from the agent that teaches them, with no human override possible.</div></div>
+            <div class="fw-tag">Framework → RANK + TRAIL</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ S2: REDESIGN ══ -->
+      <div id="s2" class="section-view">
+        <div class="sec-heading">
+          <div class="sec-eyebrow">Section 2 · Redesigned AI System</div>
+          <div class="sec-title">The fixes — domain by domain</div>
+          <div class="sec-desc">Each gap resolved using its matching framework. Tap any domain to expand the full redesign.</div>
+        </div>
+
+        <div class="accordion">
+
+          <!-- PROMPTING -->
+          <div class="acc-item" id="acc1">
+            <div class="acc-head" onclick="toggleAcc('acc1')">
+              <div class="acc-head-left">
+                <span class="domain-chip chip-prompt">Prompting</span>
+                <span class="acc-title">AIM + MAP — CBC-aligned tutor prompt</span>
+              </div>
+              <svg class="acc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="acc-body">
+              <p style="font-size:13px;color:var(--ink-soft);margin:14px 0 4px;">Rewritten prompt with explicit AIM and MAP labels:</p>
+              <div class="code-block"><span class="lbl lbl-a">A — Action</span> You are an expert tutor for Kenyan secondary school students following the CBC curriculum.
+
+<span class="lbl lbl-i">I — Intent</span> Your goal is to explain [TOPIC] so the student builds genuine understanding — not memorisation. Use local Kenyan examples: markets, matatus, M-Pesa, maize farming, the Rift Valley.
+
+<span class="lbl lbl-m">M — Mission</span> Every explanation must be accessible to a student studying in English and Swahili, at Form [LEVEL], on a 2G connection.
+
+<span class="lbl lbl-map">M — Mode</span> Conversational tutor: patient, encouraging, never condescending.
+
+<span class="lbl lbl-map">A — Audience</span> Kenyan Form 3 or 4 student, age 15–18, rural or peri-urban, CBC curriculum.
+
+<span class="lbl lbl-map">P — Purpose</span> Prepare the student to answer KCSE exam questions confidently while understanding the real-world relevance of the concept.</div>
+            </div>
+          </div>
+
+          <!-- FLUENCY -->
+          <div class="acc-item" id="acc2">
+            <div class="acc-head" onclick="toggleAcc('acc2')">
+              <div class="acc-head-left">
+                <span class="domain-chip chip-fluency">Fluency</span>
+                <span class="acc-title">4D Framework — KCSE exam revision interaction</span>
+              </div>
+              <svg class="acc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="acc-body">
+              <div class="code-block"><span class="lbl lbl-4d">Discover</span> Student asks: "Explain photosynthesis for my KCSE revision."
+
+<span class="lbl lbl-4d">Define</span>   Context: KCSE Biology, Form 3, Chapter 4, CBC syllabus.
+          RAG Source: KNEC KCSE Biology Syllabus 2024 + KIE-approved textbook corpus.
+          Temperature: 0.2  ← low for exam factual accuracy.
+          Negative prompt: Do NOT use non-Kenyan ecosystems. Do NOT generate content
+          outside the KNEC syllabus. Do NOT speculate.
+
+<span class="lbl lbl-4d">Design</span>   Response structure:
+          1. Definition  2. Light reaction  3. Dark reaction
+          4. Real-world application (maize farming, Rift Valley)
+          5. Bilingual English/Swahili glossary appended.
+
+<span class="lbl lbl-4d">Deliver</span>  Plain text, low-bandwidth mode. Optional Swahili audio narration toggle.</div>
+            </div>
+          </div>
+
+          <!-- ETHICS -->
+          <div class="acc-item" id="acc3">
+            <div class="acc-head" onclick="toggleAcc('acc3')">
+              <div class="acc-head-left">
+                <span class="domain-chip chip-ethics">Ethics</span>
+                <span class="acc-title">TRACK + OASIS — student data governance</span>
+              </div>
+              <svg class="acc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="acc-body">
+              <div class="code-block"><span class="lbl lbl-tr">T — Transparency</span>  Full disclosure in Swahili + English at onboarding. No hidden telemetry.
+<span class="lbl lbl-tr">R — Respect</span>       Parental consent required for all learners under 18. Granular:
+                   learning data | platform improvement | research — three separate toggles.
+<span class="lbl lbl-tr">A — Accountability</span> Named DPO registered under Kenya DPA 2019.
+<span class="lbl lbl-tr">C — Control</span>        Parents can download, amend, or delete child's data at any time.
+<span class="lbl lbl-tr">K — Knowledge</span>      Annual plain-language privacy report published for all users.
+
+<span class="lbl lbl-oa">O — Oversight</span>     DPO reviews all 3rd-party sharing agreements quarterly.
+<span class="lbl lbl-oa">A — Auditing</span>      Automated audit logs retained 3 years (DPA 2019 requirement).
+<span class="lbl lbl-oa">S — Safety</span>        Student data NEVER sold. Used only for adaptive learning improvement.
+<span class="lbl lbl-oa">I — Inclusion</span>     Privacy UX in Kikuyu, Luo, Kalenjin — visual icons for low-literacy parents.
+<span class="lbl lbl-oa">S — Sustainability</span> Data minimisation: collect only what the learning outcome strictly needs.
+
+Regulation: Kenya Data Protection Act 2019, §25 (lawful basis), §30 (children's data).</div>
+            </div>
+          </div>
+
+          <!-- AGENTS -->
+          <div class="acc-item" id="acc4">
+            <div class="acc-head" onclick="toggleAcc('acc4')">
+              <div class="acc-head-left">
+                <span class="domain-chip chip-agents">Agents</span>
+                <span class="acc-title">RANK + TRAIL — 2-agent handoff architecture</span>
+              </div>
+              <svg class="acc-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+            </div>
+            <div class="acc-body">
+              <div class="agent-flow">
+                <div class="agent-box agent-tutor">
+                  <h4>🤖 TutorBot — Tier 1</h4>
+                  <ul class="agent-list">
+                    <li class="yes">Delivers CBC curriculum content</li>
+                    <li class="yes">Generates practice questions</li>
+                    <li class="yes">Session memory only</li>
+                    <li class="no">Cannot grade summative work</li>
+                    <li class="no">Cannot store beyond session</li>
+                  </ul>
+                </div>
+                <div class="agent-arrow">→</div>
+                <div class="agent-box agent-assess">
+                  <h4>📋 AssessBot — Tier 2</h4>
+                  <ul class="agent-list">
+                    <li class="yes">Grades vs KNEC rubrics</li>
+                    <li class="yes">Flags learning gaps</li>
+                    <li class="yes">Stores term-level memory</li>
+                    <li class="no">Cannot modify content</li>
+                    <li class="no">Cannot override teacher</li>
+                  </ul>
+                </div>
+                <div class="agent-arrow">→</div>
+                <div class="agent-box agent-human">
+                  <h4>👩‍🏫 Human Teacher — Tier 3</h4>
+                  <ul class="agent-list">
+                    <li class="yes">Full override authority</li>
+                    <li class="yes">Reviews flagged decisions</li>
+                    <li class="yes">Accesses persistent memory</li>
+                    <li class="yes">Can suspend any agent</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="code-block">TRAIL log fields: timestamp | student_id (anonymised) | agent | action | confidence | handoff_reason
+
+Memory layers:
+  Session  → TutorBot only     (cleared post-session)
+  Term     → AssessBot only    (retained per academic term)
+  Persistent → Human Teacher  (never exposed to agents)
+
+Handoff triggers:
+  → AssessBot confidence &lt; 0.75  →  escalate to teacher within 2 min
+  → Student distress keyword detected  →  both agents pause immediately</div>
+              <div class="kill-strip">
+                <span class="kill-icon">🔴</span>
+                <div class="kill-text">Kill switch: any teacher or parent suspends both agents instantly via one dashboard button. All sessions terminate within 5 seconds. No restart without human re-authorisation. Every activation triggers an automatic incident report to the DPO.</div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ══ S3: IMPACT ══ -->
+      <div id="s3" class="section-view">
+        <div class="sec-heading">
+          <div class="sec-eyebrow">Section 3 · HORIZON Scan</div>
+          <div class="sec-title">5-year impact projection</div>
+          <div class="sec-desc">Three stakeholder rings: direct learners, surrounding communities, and the environment.</div>
+        </div>
+
+        <div class="horizon-grid">
+          <div class="horizon-card">
+            <div class="horizon-head">
+              <div class="horizon-icon hi-green">👩‍🎓</div>
+              <div>
+                <h3>Direct users — Kenyan learners (Form 1–4)</h3>
+                <p>1M+ learners · STEM gender gap closes by 18pp</p>
+              </div>
+            </div>
+            <div class="horizon-body">
+              <div class="timeline-row"><span class="t-year">Yr 1</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-green" style="width:20%"></div></div><div class="t-text">CBC-aligned tutoring reaches 50,000 students in Nairobi and Mombasa.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 2</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-green" style="width:38%"></div></div><div class="t-text">Bilingual Swahili/English mode reduces rural comprehension gap by est. 30%.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 3</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-green" style="width:56%"></div></div><div class="t-text">KCSE pass rates measurably improve in EduSavvy schools; 200,000 learners onboarded.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 4</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-green" style="width:74%"></div></div><div class="t-text">Adaptive engine personalises 500,000 pathways; dropout risk flagging active.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 5</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-green" style="width:95%"></div></div><div class="t-text">1M+ learners. STEM gender parity gap closes by 18 percentage points.</div></div></div>
+            </div>
+          </div>
+
+          <div class="horizon-card">
+            <div class="horizon-head">
+              <div class="horizon-icon hi-purple">🏘️</div>
+              <div>
+                <h3>Surrounding communities — teachers and families</h3>
+                <p>10,000 teachers upskilled · family engagement doubles</p>
+              </div>
+            </div>
+            <div class="horizon-body">
+              <div class="timeline-row"><span class="t-year">Yr 1</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-purple" style="width:15%"></div></div><div class="t-text">Teachers co-design curriculum data sets; AI augmentation (not replacement) piloted.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 2</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-purple" style="width:32%"></div></div><div class="t-text">Parent privacy dashboard in 5 languages. Community trust index rises.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 3</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-purple" style="width:54%"></div></div><div class="t-text">Teacher AI literacy programme reaches 10,000 educators across all 47 counties.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 4–5</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-purple" style="width:80%"></div></div><div class="t-text">Community hubs in Kisumu, Eldoret, Garissa. Family engagement in learning doubles.</div></div></div>
+            </div>
+          </div>
+
+          <div class="horizon-card">
+            <div class="horizon-head">
+              <div class="horizon-icon hi-amber">🌱</div>
+              <div>
+                <h3>Non-human stakeholder — environment and infrastructure</h3>
+                <p>2M+ pages saved/yr · solar off-grid deployment · NEMA risk</p>
+              </div>
+            </div>
+            <div class="horizon-body">
+              <div class="timeline-row"><span class="t-year">Yr 1–2</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-amber" style="width:28%"></div></div><div class="t-text">Text-first low-bandwidth design reduces data centre energy vs video-heavy rivals.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 3</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-amber" style="width:50%"></div></div><div class="t-text">Digital textbooks prevent est. 2M pages of paper per year in pilot counties.</div></div></div>
+              <div class="timeline-row"><span class="t-year">Yr 4–5</span><div class="t-right"><div class="t-bar-bg"><div class="t-bar-fill fill-amber" style="width:72%"></div></div><div class="t-text">Solar-powered offline-sync devices in off-grid schools. ⚠️ Risk: e-waste requires active NEMA Kenya recycling partnership.</div></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ S4: REFLECTION ══ -->
+      <div id="s4" class="section-view">
+        <div class="sec-heading">
+          <div class="sec-eyebrow">Section 4 · Safari Reflection</div>
+          <div class="sec-title">How this course changed my thinking</div>
+        </div>
+        <div class="reflection-card">
+          <div class="reflection-top">
+            <h2>Across all four terrains</h2>
+            <p>Savannah · Tsavo · Ethical Savannah · Agentic Pride</p>
+          </div>
+          <div class="reflection-body">
+            <p class="reflection-text">Before this course, I thought AI strategy meant choosing the right model and writing a good prompt. The AI Safari taught me that strategy — especially in an African context — is fundamentally about power: who holds it, who it affects, and who it forgets.</p>
+
+            <div class="shift-block">
+              <div class="shift-label">The moment my thinking shifted</div>
+              <div class="shift-text">It happened in the Ethics Savannah terrain, when I applied TRACK to EduSavvy's data practices. I had assumed that collecting student data to improve learning was inherently good. But when I mapped it against Kenya's Data Protection Act 2019 and asked: <em>"who consented to this, and in what language?"</em> — everything changed. A parent in Turkana County who cannot read English has never truly consented, even if a checkbox was ticked. A system can be technically functional and ethically hollow at the same time.</div>
+            </div>
+
+            <p class="reflection-text">The HORIZON scan changed how I frame impact. I used to measure edtech success as "students who pass exams." Now I see three rings: the learner, the family and teacher around them, and the physical environment the infrastructure touches. AI that ignores those outer rings is not intelligent — it is incomplete.</p>
+
+            <p class="reflection-text">RANK + TRAIL changed how I think about AI autonomy. I used to see agents as efficient replacements for slow human processes. Now I see them as systems that must earn authority incrementally — every action logged, every handoff justified, and a human always able to pull the plug.</p>
+
+            <p class="reflection-text">Africa does not need AI imported from elsewhere and relabelled. It needs AI designed from the inside — with local language, local regulation, local consequence, and local ambition at the centre. This course gave me the frameworks to build that, and the honesty to ask whether I am actually doing it.</p>
+
+            <div class="pill-row">
+              <span class="pill">AIM + MAP</span>
+              <span class="pill">4D Framework</span>
+              <span class="pill">TRACK + OASIS</span>
+              <span class="pill">RANK + TRAIL</span>
+              <span class="pill">HORIZON</span>
+              <span class="pill">Kenya DPA 2019</span>
+            </div>
+            <div class="word-count">~230 words</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ S5: SUBMISSION ══ -->
+      <div id="s5" class="section-view">
+        <div class="sec-heading">
+          <div class="sec-eyebrow">Submission Guide</div>
+          <div class="sec-title">Six deliverables — all ready</div>
+          <div class="sec-desc">Everything you need to submit. This prototype IS deliverable #4.</div>
+        </div>
+        <div class="checklist">
+          <div class="check-item">
+            <div class="check-num">1</div>
+            <div>
+              <div class="check-title">Executive Brief — Google Doc</div>
+              <div class="check-desc">Download EduSavvy_Executive_Brief.docx → upload to Google Drive → Open with Google Docs → Share with "anyone with link can view."</div>
+            </div>
+            <span class="check-status status-done">Ready</span>
+          </div>
+          <div class="check-item">
+            <div class="check-num">2</div>
+            <div>
+              <div class="check-title">Ethical Architecture Dossier — Canva</div>
+              <div class="check-desc">Screenshot the TRACK + OASIS dossier widget → upload to Canva → share as public URL. Accent colour #1D9E75.</div>
+            </div>
+            <span class="check-status status-done">Ready</span>
+          </div>
+          <div class="check-item">
+            <div class="check-num">3</div>
+            <div>
+              <div class="check-title">Agent Pride Blueprint — Canva</div>
+              <div class="check-desc">Screenshot the RANK + TRAIL blueprint widget → upload to Canva → share as public URL. TutorBot green, AssessBot purple, kill switch coral.</div>
+            </div>
+            <span class="check-status status-done">Ready</span>
+          </div>
+          <div class="check-item">
+            <div class="check-num">4</div>
+            <div>
+              <div class="check-title">Live Prototype — This app</div>
+              <div class="check-desc">Host this HTML file on GitHub Pages (free): create a repo → upload index.html → enable Pages under Settings → copy the URL. Or share via Netlify drop.</div>
+            </div>
+            <span class="check-status status-done">You're here</span>
+          </div>
+          <div class="check-item">
+            <div class="check-num">5</div>
+            <div>
+              <div class="check-title">Impact Assessment — Google Sheet</div>
+              <div class="check-desc">Download EduSavvy_HORIZON_Impact_Assessment.xlsx → upload to Google Drive → Open with Google Sheets → Share with "anyone with link."</div>
+            </div>
+            <span class="check-status status-done">Ready</span>
+          </div>
+          <div class="check-item">
+            <div class="check-num">6</div>
+            <div>
+              <div class="check-title">Safari Reflection — Google Doc</div>
+              <div class="check-desc">Download EduSavvy_Safari_Reflection.docx → upload to Google Drive → Open with Google Docs → Share with "anyone with link."</div>
+            </div>
+            <span class="check-status status-done">Ready</span>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="sec-heading">
+          <div class="sec-title" style="font-size:16px;">How to host this prototype for free</div>
+        </div>
+        <div class="code-block">Option A — GitHub Pages (recommended):
+1. Go to github.com → New repository → name it "edusavvy-blueprint"
+2. Upload this file as "index.html"
+3. Settings → Pages → Source: main branch → Save
+4. Your URL: https://[your-username].github.io/edusavvy-blueprint
+
+Option B — Netlify Drop (fastest, 30 seconds):
+1. Go to app.netlify.com/drop
+2. Drag and drop this HTML file
+3. Copy the generated URL immediately</div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /shell -->
+
+<script>
+  const sections = {
+    s1: { title: "Diagnostic Report",   crumb: "Section 1 of 4", progress: "25%"  },
+    s2: { title: "Redesigned System",   crumb: "Section 2 of 4", progress: "50%"  },
+    s3: { title: "Impact Projection",   crumb: "Section 3 of 4", progress: "75%"  },
+    s4: { title: "Reflection",          crumb: "Section 4 of 4", progress: "100%" },
+    s5: { title: "Submission Guide",    crumb: "Checklist",       progress: "100%" },
+  };
+
+  function showSection(id, btn) {
+    document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    const meta = sections[id];
+    document.getElementById('topbar-section').textContent = meta.title;
+    document.getElementById('topbar-crumb').textContent = meta.crumb;
+    document.getElementById('progress-label').textContent = meta.progress;
+    document.getElementById('progress-fill').style.width = meta.progress;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function toggleAcc(id) {
+    const item = document.getElementById(id);
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.acc-item').forEach(a => a.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+</script>
+</body>
+</html>
